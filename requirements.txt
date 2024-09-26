@@ -1,9 +1,5 @@
 streamlit
-audio_recorder_streamlit
 google-generativeai
-gtts
-pydub
+gTTS
 SpeechRecognition
-streamlit-webrtc
-av
-numpy
+audio-recorder-streamlit
