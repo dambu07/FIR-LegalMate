@@ -28,7 +28,7 @@ model = genai.GenerativeModel(
 chat_session = model.start_chat(history=[])
 
 def process_input(input_text):
-    response = chat_session.send_message(system_instruction + "\n\n" + input_text)
+    response = chat_session.send_message(input_text)
     return response.text
 
 st.title("Legal Assistant for FIR Writing")
