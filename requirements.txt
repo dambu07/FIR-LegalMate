@@ -1,4 +1,5 @@
 streamlit
+audio_recorder_streamlit
 google-generativeai
 gtts
 pydub
