@@ -6,35 +6,23 @@ import tempfile
 import threading
 import queue
 import re
-from pydub import AudioSegment
-from pydub.playback import play
-import io
 
 def capture_audio(language='en-IN', result_queue=None, stop_event=None):
     r = sr.Recognizer()
-    
-    while not stop_event.is_set():
-        audio_data = st.file_uploader("Upload an audio file", type=["wav", "mp3", "ogg"], key=f"audio_upload_{time.time()}")
-        if audio_data is not None:
+    with sr.Microphone() as source:
+        st.write("Listening... Speak now.")
+        while not stop_event.is_set():
             try:
-                # Convert the uploaded file to AudioSegment
-                audio = AudioSegment.from_file(io.BytesIO(audio_data.read()), format=audio_data.name.split('.')[-1])
-                
-                # Convert AudioSegment to raw data for speech recognition
-                raw_data = audio.raw_data
-                audio_file = sr.AudioFile(io.BytesIO(raw_data))
-                
-                with audio_file as source:
-                    audio = r.record(source)
-                
+                audio = r.listen(source, timeout=5, phrase_time_limit=10)
                 text = r.recognize_google(audio, language=language)
                 result_queue.put(text)
+                st.write(f"Recognized: {text}")
+            except sr.WaitTimeoutError:
+                continue
             except sr.UnknownValueError:
-                result_queue.put("Speech recognition could not understand the audio")
+                st.write("Speech recognition could not understand the audio")
             except sr.RequestError as e:
-                result_queue.put(f"Could not request results from speech recognition service; {e}")
-        
-        time.sleep(1)  # Add a small delay to prevent excessive CPU usage
+                st.write(f"Could not request results from speech recognition service; {e}")
 
 def clean_markdown(text):
     # Remove headers
@@ -62,4 +50,5 @@ def start_listening(language='en-IN', result_queue=None, stop_event=None):
     return thread
 
 def stop_listening(thread):
-    thread.join()
+    if thread:
+        thread.join()
