@@ -75,7 +75,7 @@ user_input = ""
 if input_type == "Text":
     user_input = st.text_area(strings[language]["text_input"])
 else:
-    user_input = audio_recorder()
+    user_input = audio_recorder(text="Click the Mic when you're ready")
     result_queue = queue.Queue()
     stop_event = threading.Event()
     
