@@ -8,11 +8,10 @@ def transcribe_audio_data(audio_data, language):
     r = sr.Recognizer()
     try:
         # Convert Streamlit's audio recorder data to bytes and then into a file-like object
-        audio_bytes = audio_data.getvalue()
-        audio_file = sr.AudioFile(io.BytesIO(audio_bytes))
+        audio_bytes = io.BytesIO(audio_data)
         
         # Recognize the audio
-        with audio_file as source:
+        with sr.AudioFile(audio_bytes) as source:
             audio = r.record(source)
         text = r.recognize_google(audio, language=language)
         return text
