@@ -6,23 +6,35 @@ import tempfile
 import threading
 import queue
 import re
+from pydub import AudioSegment
+from pydub.playback import play
+import io
 
-def capture_audio(language='en-IN', duration=10):
+def capture_audio(language='en-IN', result_queue=None, stop_event=None):
     r = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.write(f"Listening for {duration} seconds...")
-        audio = r.listen(source, timeout=duration, phrase_time_limit=duration)
-    return audio
-
-def transcribe_audio(audio, language='en-IN'):
-    r = sr.Recognizer()
-    try:
-        text = r.recognize_google(audio, language=language)
-        return text
-    except sr.UnknownValueError:
-        return "Speech recognition could not understand the audio"
-    except sr.RequestError as e:
-        return f"Could not request results from speech recognition service; {e}"
+    
+    while not stop_event.is_set():
+        audio_data = st.file_uploader("Upload an audio file", type=["wav", "mp3", "ogg"], key=f"audio_upload_{time.time()}")
+        if audio_data is not None:
+            try:
+                # Convert the uploaded file to AudioSegment
+                audio = AudioSegment.from_file(io.BytesIO(audio_data.read()), format=audio_data.name.split('.')[-1])
+                
+                # Convert AudioSegment to raw data for speech recognition
+                raw_data = audio.raw_data
+                audio_file = sr.AudioFile(io.BytesIO(raw_data))
+                
+                with audio_file as source:
+                    audio = r.record(source)
+                
+                text = r.recognize_google(audio, language=language)
+                result_queue.put(text)
+            except sr.UnknownValueError:
+                result_queue.put("Speech recognition could not understand the audio")
+            except sr.RequestError as e:
+                result_queue.put(f"Could not request results from speech recognition service; {e}")
+        
+        time.sleep(1)  # Add a small delay to prevent excessive CPU usage
 
 def clean_markdown(text):
     # Remove headers
@@ -42,15 +54,12 @@ def text_to_speech(text, language='en'):
     tts = gTTS(text=cleaned_text, lang=language, slow=False)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
         tts.save(fp.name)
-        return fp.name
+    return fp.name
 
-def background_listening(language, duration, result_queue):
-    audio = capture_audio(language, duration)
-    text = transcribe_audio(audio, language)
-    result_queue.put(text)
-
-def start_listening(language='en-IN', duration=10):
-    result_queue = queue.Queue()
-    thread = threading.Thread(target=background_listening, args=(language, duration, result_queue))
+def start_listening(language='en-IN', result_queue=None, stop_event=None):
+    thread = threading.Thread(target=capture_audio, args=(language, result_queue, stop_event))
     thread.start()
-    return result_queue, thread
+    return thread
+
+def stop_listening(thread):
+    thread.join()
