@@ -1,10 +1,7 @@
-# Author : SreeSaiArjun
-
 import streamlit as st 
 import google.generativeai as genai 
 from audio import start_listening, stop_listening, text_to_speech
 import queue
-import time
 import threading
 
 # Configure Gemini API 
@@ -49,25 +46,27 @@ strings = {
         "title": "Legal Assistant for FIR Writing",
         "input_type": "Choose input type:",
         "text_input": "Enter the incident details:",
-        "upload_audio": "Upload Audio File",
+        "start_voice_input": "Start Voice Input",
+        "stop_voice_input": "Stop Voice Input",
         "process": "Process",
-        "no_input_warning": "Please enter some text or upload an audio file.",
+        "no_input_warning": "Please enter some text or use voice input.",
         "note": "Note: This tool is designed to assist police officers in drafting FIRs. Always consult with legal experts for final verification."
     },
     "Hindi": {
         "title": "FIR लेखन के लिए कानूनी सहायक",
         "input_type": "इनपुट प्रकार चुनें:",
         "text_input": "घटना का विवरण दर्ज करें:",
-        "upload_audio": "ऑडियो फ़ाइल अपलोड करें",
+        "start_voice_input": "वॉइस इनपुट शुरू करें",
+        "stop_voice_input": "वॉइस इनपुट बंद करें",
         "process": "Process करें",
-        "no_input_warning": "कृपया कुछ टेक्स्ट दर्ज करें या ऑडियो फ़ाइल अपलोड करें।",
-        "note": "नोट :  यह उपकरण पुलिस अधिकारियों को एफआईआर ड्राफ्ट करने में सहायता करने के लिए डिज़ाइन किया गया है। अंतिम सत्यापन के लिए हमेशा कानूनी विशेषज्ञों से परामर्श करें।"
+        "no_input_warning": "कृपया कुछ टेक्स्ट दर्ज करें या वॉइस इनपुट का उपयोग करें।",
+        "note": "नोट: यह उपकरण पुलिस अधिकारियों को एफआईआर ड्राफ्ट करने में सहायता करने के लिए डिज़ाइन किया गया है। अंतिम सत्यापन के लिए हमेशा कानूनी विशेषज्ञों से परामर्श करें।"
     }
 }
 
 st.title(strings[language]["title"])
 
-input_type = st.radio(strings[language]["input_type"], ("Text", "Audio"))
+input_type = st.radio(strings[language]["input_type"], ("Text", "Voice"))
 
 user_input = ""
 
@@ -77,14 +76,25 @@ else:
     result_queue = queue.Queue()
     stop_event = threading.Event()
     
-    audio_file = st.file_uploader(strings[language]["upload_audio"], type=["wav", "mp3", "ogg"])
+    col1, col2 = st.columns(2)
     
-    if audio_file is not None:
+    if col1.button(strings[language]["start_voice_input"]):
         thread = start_listening(lang_code, result_queue, stop_event)
-        user_input = result_queue.get()
+    
+    if col2.button(strings[language]["stop_voice_input"]):
         stop_event.set()
-        thread.join()
-        st.write(f"Transcribed text ({language}):", user_input)
+        stop_listening(thread)
+    
+    # Display recognized text in real-time
+    recognized_text = st.empty()
+    
+    while not stop_event.is_set():
+        try:
+            text = result_queue.get(timeout=0.1)
+            user_input += text + " "
+            recognized_text.write(f"Recognized: {user_input}")
+        except queue.Empty:
+            continue
 
 if st.button(strings[language]["process"]): 
     if user_input: 
