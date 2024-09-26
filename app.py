@@ -1,25 +1,12 @@
 import os
 import streamlit as st
-import sounddevice as sd
-import numpy as np
-import scipy.io.wavfile
+import speech_recognition as sr
+from googletrans import Translator
 import google.generativeai as genai
-import tempfile
 
-genai.configure(api_key=st.secrets("GEMINI_API_KEY"))
+# Initialize Google AI for FIR legal assistance
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
-# Function to record audio using sounddevice
-def record_audio(duration=5, fs=16000):
-    st.write("Recording...")
-    recording = sd.rec(int(duration * fs), samplerate=fs, channels=1, dtype="int16")
-    sd.wait()  # Wait until recording is finished
-    return recording, fs
-
-# Save the recorded audio to a temporary file
-def save_wav_file(filename, recording, fs):
-    scipy.io.wavfile.write(filename, fs, recording)
-
-# Create the model
 generation_config = {
     "temperature": 1,
     "top_p": 0.95,
@@ -37,31 +24,70 @@ model = genai.GenerativeModel(
         {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
         {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
     ],
-    system_instruction="You are an AI-powered legal assistant designed to assist police officers in India in drafting legally accurate and comprehensive FIRs...",
+    system_instruction="""You are an AI-powered legal assistant designed to assist police officers in India. 
+Your primary task is to help them draft legally accurate FIRs by suggesting relevant sections from the IPC, CrPC, etc."""
 )
 
-# Streamlit interface
-st.title("AI-Powered FIR Assistance Tool")
-input_method = st.radio("Choose Input Method", ["Text", "Voice"])
+# Function to transcribe speech to text
+def recognize_speech(lang="en-IN"):
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.info("Listening... please speak now.")
+        audio = recognizer.listen(source)
+    try:
+        st.info("Recognizing...")
+        text = recognizer.recognize_google(audio, language=lang)
+        return text
+    except sr.UnknownValueError:
+        st.error("Sorry, I did not understand the audio.")
+    except sr.RequestError:
+        st.error("Error in accessing Google API.")
+    return None
 
-if input_method == "Text":
-    user_input = st.text_area("Enter the incident details in text:")
-    if st.button("Submit"):
+# Translate text to the appropriate language
+def translate_text(text, target_lang):
+    translator = Translator()
+    result = translator.translate(text, dest=target_lang)
+    return result.text
+
+# Streamlit App UI
+st.title("FIR LegalMate - AI-Powered FIR Assistance")
+st.write("This tool helps police officers in India by providing legal sections for FIRs based on the description of the incident.")
+
+# Language selection
+language_option = st.selectbox("Choose Input Language", ("English", "Hindi"))
+
+# Choose input mode
+input_mode = st.radio("Select Input Mode", ('Text', 'Voice'))
+
+if input_mode == 'Text':
+    if language_option == 'English':
+        user_input = st.text_area("Describe the incident (in English):")
+    else:
+        user_input = st.text_area("Describe the incident (in Hindi):")
         if user_input:
-            response = model.generate_content([user_input])
-            st.markdown(response.text)
-        else:
-            st.warning("Please enter some text.")
-
-elif input_method == "Voice":
+            user_input = translate_text(user_input, "en")
+else:
+    st.info("Click the button and start speaking when prompted.")
     if st.button("Record Voice"):
-        duration = st.slider("Select recording duration (seconds)", 5, 60, 5)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
-            recording, fs = record_audio(duration=duration)
-            save_wav_file(temp_audio_file.name, recording, fs)
-            
-            # Upload the audio file to Gemini
-            audio_file = genai.upload_file(temp_audio_file.name, mime_type="audio/wav")
-            st.write("Processing the audio...")
-            response = model.generate_content([audio_file, "Provide legal sections based on this audio"])
-            st.markdown(response.text)
+        if language_option == 'English':
+            user_input = recognize_speech("en-IN")
+        else:
+            user_input = recognize_speech("hi-IN")
+            if user_input:
+                user_input = translate_text(user_input, "en")
+
+# Process input using Google Gemini AI if input is provided
+if user_input:
+    chat_session = model.start_chat(
+        history=[
+            {
+                "role": "user",
+                "content": user_input
+            }
+        ]
+    )
+    response = chat_session.send_message("Please suggest relevant legal sections.")
+    st.write("### AI Response")
+    st.markdown(response.text)
+
