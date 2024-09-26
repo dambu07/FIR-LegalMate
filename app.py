@@ -43,10 +43,6 @@ def process_input(input_text, language):
     response = chat_session.send_message(input_text)
     return response.text 
  
-
-
-
-
 # Localized strings
 strings = {
     "English": {
@@ -59,13 +55,13 @@ strings = {
         "note": "Note: This tool is designed to assist police officers in drafting FIRs. Always consult with legal experts for final verification."
     },
     "Hindi": {
-        "title": "एफआईआर लेखन के लिए कानूनी सहायक",
+        "title": "FIR लेखन के लिए कानूनी सहायक",
         "input_type": "इनपुट प्रकार चुनें:",
         "text_input": "घटना का विवरण दर्ज करें:",
         "upload_audio": "ऑडियो फ़ाइल अपलोड करें",
-        "process": "प्रक्रिया करें",
+        "process": "Process करें",
         "no_input_warning": "कृपया कुछ टेक्स्ट दर्ज करें या ऑडियो फ़ाइल अपलोड करें।",
-        "note": "नोट: यह उपकरण पुलिस अधिकारियों को एफआईआर ड्राफ्ट करने में सहायता करने के लिए डिज़ाइन किया गया है। अंतिम सत्यापन के लिए हमेशा कानूनी विशेषज्ञों से परामर्श करें।"
+        "note": "नोट :  यह उपकरण पुलिस अधिकारियों को एफआईआर ड्राफ्ट करने में सहायता करने के लिए डिज़ाइन किया गया है। अंतिम सत्यापन के लिए हमेशा कानूनी विशेषज्ञों से परामर्श करें।"
     }
 }
 
