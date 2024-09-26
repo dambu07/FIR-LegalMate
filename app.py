@@ -8,7 +8,7 @@ genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 generation_config = {
     "temperature": 2,
     "top_p": 0.95,
-    "top_k": 64,
+    "top_k": 40,
     "max_output_tokens": 8192,
     "response_mime_type": "text/plain",
 }
