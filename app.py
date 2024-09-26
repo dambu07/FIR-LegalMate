@@ -3,6 +3,7 @@
 import streamlit as st 
 import google.generativeai as genai 
 from audio import start_listening, stop_listening, text_to_speech
+import audio_recorder_streamlit
 import queue
 import time
 import threading
@@ -74,6 +75,7 @@ user_input = ""
 if input_type == "Text":
     user_input = st.text_area(strings[language]["text_input"])
 else:
+    user_input = audio_recorder()
     result_queue = queue.Queue()
     stop_event = threading.Event()
     
