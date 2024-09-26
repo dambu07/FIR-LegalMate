@@ -1,5 +1,5 @@
-google-generativeai
 streamlit
 speechrecognition
-sounddevice
-scipy
+pyaudio
+googletrans
+google-generativeai
