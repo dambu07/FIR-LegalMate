@@ -1,3 +1,5 @@
+# Author : SreeSaiArjun
+
 import streamlit as st 
 import google.generativeai as genai 
 from audio import start_listening, stop_listening, text_to_speech
