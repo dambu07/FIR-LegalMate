@@ -31,7 +31,10 @@ def process_input(input_text):
     response = chat_session.send_message(input_text)
     return response.text
 
+st.set_page_config(page_title="FIR-LegalMate", layout="wide")
 st.title("Legal Assistant for FIR Writing")
+
+
 
 user_input = st.text_area("Enter the incident details:")
 if st.button("Process"):
