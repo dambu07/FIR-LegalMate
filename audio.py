@@ -3,32 +3,54 @@ import speech_recognition as sr
 from gtts import gTTS
 import os
 import tempfile
+import threading
+import queue
+import re
 
-def transcribe_audio(audio_file, language='en-IN'):
+def capture_audio(language='en-IN', duration=10):
     r = sr.Recognizer()
-    with sr.AudioFile(audio_file) as source:
-        audio = r.record(source)
+    with sr.Microphone() as source:
+        st.write(f"Listening for {duration} seconds...")
+        audio = r.listen(source, timeout=duration, phrase_time_limit=duration)
+    return audio
+
+def transcribe_audio(audio, language='en-IN'):
+    r = sr.Recognizer()
     try:
-        if language == 'en-IN':
-            text = r.recognize_google(audio, language='en-IN')
-        elif language == 'hi-IN':
-            text = r.recognize_google(audio, language='hi-IN')
-        else:
-            raise ValueError("Unsupported language")
+        text = r.recognize_google(audio, language=language)
         return text
     except sr.UnknownValueError:
         return "Speech recognition could not understand the audio"
     except sr.RequestError as e:
         return f"Could not request results from speech recognition service; {e}"
 
+def clean_markdown(text):
+    # Remove headers
+    text = re.sub(r'#+\s*', '', text)
+    # Remove bold and italic markers
+    text = re.sub(r'\*+', '', text)
+    # Remove bullet points
+    text = re.sub(r'^\s*[-*]\s*', '', text, flags=re.MULTILINE)
+    # Remove code blocks
+    text = re.sub(r'`{1,3}.*?`{1,3}', '', text, flags=re.DOTALL)
+    # Remove links
+    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
+    return text.strip()
+
 def text_to_speech(text, language='en'):
-    tts = gTTS(text=text, lang=language, slow=False)
+    cleaned_text = clean_markdown(text)
+    tts = gTTS(text=cleaned_text, lang=language, slow=False)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
         tts.save(fp.name)
         return fp.name
 
-def get_audio_input():
-    audio_file = st.file_uploader("Upload an audio file", type=["wav", "mp3", "ogg"])
-    if audio_file is not None:
-        return audio_file
-    return None
+def background_listening(language, duration, result_queue):
+    audio = capture_audio(language, duration)
+    text = transcribe_audio(audio, language)
+    result_queue.put(text)
+
+def start_listening(language='en-IN', duration=10):
+    result_queue = queue.Queue()
+    thread = threading.Thread(target=background_listening, args=(language, duration, result_queue))
+    thread.start()
+    return result_queue, thread
