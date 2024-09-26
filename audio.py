@@ -1,40 +1,22 @@
 import streamlit as st
 import speech_recognition as sr
 from gtts import gTTS
-import os
 import tempfile
-import threading
-import queue
 import re
-from pydub import AudioSegment
-from pydub.playback import play
-import io
 
-def capture_audio(language='en-IN', result_queue=None, stop_event=None):
+def transcribe_audio_data(audio_data, language='en-IN'):
     r = sr.Recognizer()
-    
-    while not stop_event.is_set():
-        audio_data = st.file_uploader("Upload an audio file", type=["wav", "mp3", "ogg"], key=f"audio_upload_{time.time()}")
-        if audio_data is not None:
-            try:
-                # Convert the uploaded file to AudioSegment
-                audio = AudioSegment.from_file(io.BytesIO(audio_data.read()), format=audio_data.name.split('.')[-1])
-                
-                # Convert AudioSegment to raw data for speech recognition
-                raw_data = audio.raw_data
-                audio_file = sr.AudioFile(io.BytesIO(raw_data))
-                
-                with audio_file as source:
-                    audio = r.record(source)
-                
-                text = r.recognize_google(audio, language=language)
-                result_queue.put(text)
-            except sr.UnknownValueError:
-                result_queue.put("Speech recognition could not understand the audio")
-            except sr.RequestError as e:
-                result_queue.put(f"Could not request results from speech recognition service; {e}")
-        
-        time.sleep(1)  # Add a small delay to prevent excessive CPU usage
+    try:
+        # Convert Streamlit's audio recorder data to a suitable format
+        audio_file = sr.AudioFile(audio_data)
+        with audio_file as source:
+            audio = r.record(source)
+        text = r.recognize_google(audio, language=language)
+        return text
+    except sr.UnknownValueError:
+        return "Sorry, I could not understand the audio."
+    except sr.RequestError as e:
+        return f"Could not request results from Google Speech Recognition service; {e}"
 
 def clean_markdown(text):
     # Remove headers
@@ -55,11 +37,3 @@ def text_to_speech(text, language='en'):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
         tts.save(fp.name)
     return fp.name
-
-def start_listening(language='en-IN', result_queue=None, stop_event=None):
-    thread = threading.Thread(target=capture_audio, args=(language, result_queue, stop_event))
-    thread.start()
-    return thread
-
-def stop_listening(thread):
-    thread.join()
