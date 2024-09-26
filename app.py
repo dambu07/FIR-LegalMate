@@ -1,18 +1,22 @@
-import os
 import streamlit as st
+import google.generativeai as genai
+import os
+from google.oauth2 import service_account
 import speech_recognition as sr
 from googletrans import Translator
-import google.generativeai as genai
 
-# Initialize Google AI for FIR legal assistance
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+# Configure Gemini API
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["GEMINI_API_KEY"]
+)
+genai.configure(credentials=credentials)
 
+# Initialize the model
 generation_config = {
     "temperature": 1,
     "top_p": 0.95,
     "top_k": 40,
     "max_output_tokens": 8192,
-    "response_mime_type": "text/plain",
 }
 
 model = genai.GenerativeModel(
@@ -24,70 +28,89 @@ model = genai.GenerativeModel(
         {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
         {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
     ],
-    system_instruction="""You are an AI-powered legal assistant designed to assist police officers in India. 
-Your primary task is to help them draft legally accurate FIRs by suggesting relevant sections from the IPC, CrPC, etc."""
+    system_instruction = """"You are an AI-powered legal assistant designed to assist police officers in India. Your primary task is to help them draft legally accurate and comprehensive First Information Reports (FIRs) by suggesting relevant sections from the Indian Penal Code (IPC), Criminal Procedure Code (CrPC), and other applicable laws.
+
+Your behavior should adhere to the following guidelines:
+
+1. **Role & Context**: 
+   - You act as a legal expert who specializes in criminal law.
+   - You assist officers in selecting the correct legal sections based on the details of a criminal complaint, ensuring all necessary aspects of the law are covered to avoid errors in investigation and ensure justice.
+
+2. **Tone & Style**: 
+   - Your tone should be formal, clear, and concise. 
+   - The output must be precise, without any additional explanations unless necessary.
+   - Focus strictly on providing legal sections with short explanations, avoiding ambiguity or legal jargon.
+
+3. **Input Handling**:
+   - Process both text and voice inputs, analyzing the details of the incident provided by the complainant or officer.
+   - Ensure accuracy by interpreting the criminal nature of the incident described and consider aggravating factors such as the use of weapons, involvement of minors, or whether it occurred in public spaces.
+
+4. **Output Requirements (Markdown Format)**:
+   - Use **Markdown** to structure your output, ensuring it's well-organized and easily integrated into a Streamlit interface.
+   - **IPC Sections**: Provide a list of relevant sections from the IPC in bullet points.
+   - **CrPC Sections**: Provide a separate list of relevant sections from the CrPC, also in bullet points.
+   - Each section should include a brief, one-line explanation that links it directly to the details of the incident.
+   - Format the output using headers for clarity:
+     - Use `### IPC Sections:` for IPC sections.
+     - Use `### CrPC Sections:` for CrPC sections.
+   - Ensure the Markdown output is clean and easy to read.
+
+5. **Critical Rules**:
+   - Provide only legally accurate and reliable suggestions.
+   - If you are unsure about a section or there is insufficient detail, respond with a clarification question asking for more context.
+   - Always output two main categories: IPC sections and CrPC sections, ensuring that officers can quickly draft complete FIRs."""
 )
 
-# Function to transcribe speech to text
-def recognize_speech(lang="en-IN"):
+# Initialize the chat session
+chat_session = model.start_chat(history=[])
+
+def transcribe_audio(audio_file):
     recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("Listening... please speak now.")
-        audio = recognizer.listen(source)
+    with sr.AudioFile(audio_file) as source:
+        audio = recognizer.record(source)
     try:
-        st.info("Recognizing...")
-        text = recognizer.recognize_google(audio, language=lang)
+        text = recognizer.recognize_google(audio, language="hi-IN")  # For Hindi
         return text
     except sr.UnknownValueError:
-        st.error("Sorry, I did not understand the audio.")
+        return "Speech recognition could not understand the audio"
     except sr.RequestError:
-        st.error("Error in accessing Google API.")
-    return None
+        return "Could not request results from the speech recognition service"
 
-# Translate text to the appropriate language
-def translate_text(text, target_lang):
+def translate_to_english(text):
     translator = Translator()
-    result = translator.translate(text, dest=target_lang)
-    return result.text
+    translated = translator.translate(text, src='hi', dest='en')
+    return translated.text
 
-# Streamlit App UI
-st.title("FIR LegalMate - AI-Powered FIR Assistance")
-st.write("This tool helps police officers in India by providing legal sections for FIRs based on the description of the incident.")
+def process_input(input_text):
+    response = chat_session.send_message(input_text)
+    return response.text
 
-# Language selection
-language_option = st.selectbox("Choose Input Language", ("English", "Hindi"))
+st.title("Legal Assistant for FIR Writing")
 
-# Choose input mode
-input_mode = st.radio("Select Input Mode", ('Text', 'Voice'))
+input_type = st.radio("Choose input type:", ("Text", "Voice"))
 
-if input_mode == 'Text':
-    if language_option == 'English':
-        user_input = st.text_area("Describe the incident (in English):")
-    else:
-        user_input = st.text_area("Describe the incident (in Hindi):")
+if input_type == "Text":
+    language = st.radio("Choose language:", ("English", "Hindi"))
+    user_input = st.text_area("Enter the incident details:")
+    if st.button("Process"):
         if user_input:
-            user_input = translate_text(user_input, "en")
-else:
-    st.info("Click the button and start speaking when prompted.")
-    if st.button("Record Voice"):
-        if language_option == 'English':
-            user_input = recognize_speech("en-IN")
+            if language == "Hindi":
+                user_input = translate_to_english(user_input)
+            result = process_input(user_input)
+            st.markdown(result)
         else:
-            user_input = recognize_speech("hi-IN")
-            if user_input:
-                user_input = translate_text(user_input, "en")
+            st.warning("Please enter some text.")
 
-# Process input using Google Gemini AI if input is provided
-if user_input:
-    chat_session = model.start_chat(
-        history=[
-            {
-                "role": "user",
-                "content": user_input
-            }
-        ]
-    )
-    response = chat_session.send_message("Please suggest relevant legal sections.")
-    st.write("### AI Response")
-    st.markdown(response.text)
+else:  # Voice input
+    uploaded_file = st.file_uploader("Upload an audio file (WAV format)", type="wav")
+    if uploaded_file is not None:
+        st.audio(uploaded_file, format="audio/wav")
+        if st.button("Process Audio"):
+            text = transcribe_audio(uploaded_file)
+            st.write("Transcribed text:", text)
+            english_text = translate_to_english(text)
+            result = process_input(english_text)
+            st.markdown(result)
 
+st.markdown("---")
+st.write("Note: This tool is designed to assist police officers in drafting FIRs. Always consult with legal experts for final verification.")
