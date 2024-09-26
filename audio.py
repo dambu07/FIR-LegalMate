@@ -30,6 +30,18 @@ def capture_audio(audio_data, language='en-IN'):
             return f"Could not request results from speech recognition service; {e}"
     return ""
 
+def transcribe_realtime_audio(audio, language='en-IN'):
+    r = sr.Recognizer()
+    try:
+        # Create an AudioData instance for real-time processing
+        audio_data = sr.AudioData(audio, sample_rate=16000, sample_width=2)
+        text = r.recognize_google(audio_data, language=language)
+        return text
+    except sr.UnknownValueError:
+        return "Speech recognition could not understand the audio"
+    except sr.RequestError as e:
+        return f"Could not request results from speech recognition service; {e}"
+
 def clean_markdown(text):
     # Remove headers
     text = re.sub(r'#+\s*', '', text)
