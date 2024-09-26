@@ -3,7 +3,7 @@
 import streamlit as st 
 import google.generativeai as genai 
 from audio import start_listening, stop_listening, text_to_speech
-import audio_recorder_streamlit
+from audio_recorder_streamlit import audio_recorder
 import queue
 import time
 import threading
