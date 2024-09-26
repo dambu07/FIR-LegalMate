@@ -78,12 +78,22 @@ else:
     
     col1, col2 = st.columns(2)
     
-    if col1.button(strings[language]["start_voice_input"]):
-        thread = start_listening(lang_code, result_queue, stop_event)
+    start_button = col1.button(strings[language]["start_voice_input"])
+    stop_button = col2.button(strings[language]["stop_voice_input"])
     
-    if col2.button(strings[language]["stop_voice_input"]):
+    # Initialize session state for thread
+    if 'thread' not in st.session_state:
+        st.session_state.thread = None
+    
+    if start_button:
+        stop_event.clear()
+        st.session_state.thread = start_listening(lang_code, result_queue, stop_event)
+    
+    if stop_button:
         stop_event.set()
-        stop_listening(thread)
+        if st.session_state.thread:
+            stop_listening(st.session_state.thread)
+            st.session_state.thread = None
     
     # Display recognized text in real-time
     recognized_text = st.empty()
