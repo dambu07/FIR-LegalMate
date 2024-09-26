@@ -31,6 +31,13 @@ def transcribe_realtime_audio(audio, language='en-IN'):
 # Function to generate speech from text
 def text_to_speech(text, language='en'):
     tts = gTTS(text=text, lang=language, slow=False)
+
+    # Create a temporary file and save the speech as mp3
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
         tts.save(fp.name)
-    return fp.name
+    
+    # Open the temporary file to return it as a buffer
+    with open(fp.name, "rb") as audio_file:
+        audio_bytes = audio_file.read()
+    
+    return io.BytesIO(audio_bytes)
