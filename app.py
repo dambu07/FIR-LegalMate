@@ -1,6 +1,5 @@
 import streamlit as st
 import google.generativeai as genai
-import os
 
 # Configure Gemini API
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
@@ -15,7 +14,7 @@ generation_config = {
 }
 
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro",
+    model_name="gemini-1.5-pro-002",
     generation_config=generation_config,
     safety_settings=[
         {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
@@ -23,9 +22,7 @@ model = genai.GenerativeModel(
         {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
         {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
     ],
-)
-
-system_instruction = """You are an AI-powered legal assistant designed to assist police officers in India. Your primary task is to help them draft legally accurate and comprehensive First Information Reports (FIRs) by suggesting relevant sections from the Indian Penal Code (IPC), Criminal Procedure Code (CrPC), and other applicable laws.
+    system_instruction = """You are an AI-powered legal assistant designed to assist police officers in India. Your primary task is to help them draft legally accurate and comprehensive First Information Reports (FIRs) by suggesting relevant sections from the Indian Penal Code (IPC), Criminal Procedure Code (CrPC), and other applicable laws.
 
 Your behavior should adhere to the following guidelines:
 
@@ -56,6 +53,7 @@ Your behavior should adhere to the following guidelines:
    - Provide only legally accurate and reliable suggestions.
    - If you are unsure about a section or there is insufficient detail, respond with a clarification question asking for more context.
    - Always output two main categories: IPC sections and CrPC sections, ensuring that officers can quickly draft complete FIRs."""
+)
 
 chat_session = model.start_chat(history=[])
 
