@@ -31,7 +31,7 @@ def process_input(input_text):
     response = chat_session.send_message(input_text)
     return response.text
 
-st.set_page_config(page_title="FIR-LegalMate", layout="wide")
+st.set_page_config(page_title="FIR-LegalMate",page_icon="⚖️", layout="wide")
 st.title("Legal Assistant for FIR Writing")
 
 
