@@ -19,7 +19,7 @@ generation_config = {
     "response_mime_type": "text/plain", 
 } 
 
-
+st.set_page_config(page_title="FIR-LegalMate", page_icon="⚖️") 
 # Language selection at the start
 language = st.selectbox("Select language:", ("English", "Hindi"), key="language_selector")
 lang_code = "en-IN" if language == "English" else "hi-IN"
@@ -43,7 +43,7 @@ def process_input(input_text, language):
     response = chat_session.send_message(input_text)
     return response.text 
  
-st.set_page_config(page_title="FIR-LegalMate", page_icon="⚖️") 
+
 
 
 
