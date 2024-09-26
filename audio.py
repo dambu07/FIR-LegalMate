@@ -1,22 +1,25 @@
-import streamlit as st
 import speech_recognition as sr
+import io
 from gtts import gTTS
 import tempfile
 import re
 
-def transcribe_audio_data(audio_data, language='en-IN'):
+def transcribe_audio_data(audio_data, language):
     r = sr.Recognizer()
     try:
-        # Convert Streamlit's audio recorder data to a suitable format
-        audio_file = sr.AudioFile(audio_data)
+        # Convert Streamlit's audio recorder data to bytes and then into a file-like object
+        audio_bytes = audio_data.getvalue()
+        audio_file = sr.AudioFile(io.BytesIO(audio_bytes))
+        
+        # Recognize the audio
         with audio_file as source:
             audio = r.record(source)
         text = r.recognize_google(audio, language=language)
         return text
     except sr.UnknownValueError:
-        return "Sorry, I could not understand the audio."
+        return "Speech recognition could not understand the audio"
     except sr.RequestError as e:
-        return f"Could not request results from Google Speech Recognition service; {e}"
+        return f"Could not request results from speech recognition service; {e}"
 
 def clean_markdown(text):
     # Remove headers
