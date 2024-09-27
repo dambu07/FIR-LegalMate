@@ -23,8 +23,34 @@ language = st.selectbox("Select language:", (
     "Kannada", "Odia", "Malayalam", "Punjabi", "Assamese", "Urdu", "Maithili", 
     "Santali", "Konkani", "Sindhi", "Kashmiri", "Dogri", "Bodo", "Manipuri (Meitei)"
 ))
-lang_code = "en-IN" if language == "English" else "hi-IN"
-output_language = "en" if language == "English" else "hi"
+
+# Mapping language to language codes
+language_map = {
+    "English": ("en-IN", "en"),
+    "Hindi": ("hi-IN", "hi"),
+    "Bengali": ("bn-IN", "bn"),
+    "Telugu": ("te-IN", "te"),
+    "Marathi": ("mr-IN", "mr"),
+    "Tamil": ("ta-IN", "ta"),
+    "Gujarati": ("gu-IN", "gu"),
+    "Kannada": ("kn-IN", "kn"),
+    "Odia": ("or-IN", "or"),
+    "Malayalam": ("ml-IN", "ml"),
+    "Punjabi": ("pa-IN", "pa"),
+    "Assamese": ("as-IN", "as"),
+    "Urdu": ("ur-IN", "ur"),
+    "Maithili": ("mai-IN", "mai"),
+    "Santali": ("sat-IN", "sat"),
+    "Konkani": ("kok-IN", "kok"),
+    "Sindhi": ("sd-IN", "sd"),
+    "Kashmiri": ("ks-IN", "ks"),
+    "Dogri": ("doi-IN", "doi"),
+    "Bodo": ("brx-IN", "brx"),
+    "Manipuri (Meitei)": ("mni-IN", "mni")
+}
+
+# Set the language code and output language based on selection
+lang_code, output_language = language_map[language]
 
 model = genai.GenerativeModel(
     model_name="gemini-1.5-pro-002",
