@@ -15,18 +15,18 @@ generation_config = {
     "response_mime_type": "text/plain",
 }
 
-st.set_page_config(page_title="FIR-Drafter", page_icon="⚖️")
+st.set_page_config(page_title="FIR-Drafter", page_icon="#")
 
 st.markdown("""
-    <h2 style='text-align: center;'> 
+    <h1 style='text-align: center;'> 
         <span style='color: #F81F6F;'>FIR Drafting Assistant </span>
-    </h2>
+    </h1>
 """, unsafe_allow_html=True)
 
 # Again, use st.markdown for second header
 st.markdown("""
     <h4 style='text-align: center;'>
-        <span style='color: #f5f8fc;'>Write FIR accurately with legal guidance.</span>
+        <span style='color: #f5f8fc;'>Write FIR accurately with legal guidance and assistance.</span>
     </h4>
 """, unsafe_allow_html=True)
 
