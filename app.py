@@ -86,13 +86,13 @@ def process_input(input_text, language):
 # Localized strings
 strings = {
     "English": {
-        # "title": "Legal Assistant for FIR Writing",
+        "title": "",
         "input_type": "Choose input type:",
         "text_input": "Enter the incident details:",
         "upload_audio": "Upload Audio File",
         "process": "Generate FIR",
         "no_input_warning": "Please enter some text or use the audio recorder.",
-        "note": "Note: This tool is designed to assist police officers in drafting FIRs. Always consult with legal experts for final verification."
+        "note": "Note: This tool assists police officers with FIRs; consult legal experts for verification."
     },
     "Hindi": {
         "title": "FIR लेखन के लिए कानूनी सहायक",
