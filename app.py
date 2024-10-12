@@ -15,7 +15,20 @@ generation_config = {
     "response_mime_type": "text/plain",
 }
 
-st.set_page_config(page_title="FIR-LegalMate", page_icon="⚖️")
+st.set_page_config(page_title="FIR-Drafter", page_icon="⚖️")
+
+st.markdown("""
+    <h2 style='text-align: center;'> 
+        <span style='color: #F81F6F;'>FIR Writing Legal Assistant </span>
+    </h2>
+""", unsafe_allow_html=True)
+
+# Again, use st.markdown for second header
+st.markdown("""
+    <h4 style='text-align: center;'>
+        <span style='color: #f5f8fc;'>Assists in drafting First Information Reports accurately with legal guidance and support.</span>
+    </h4>
+""", unsafe_allow_html=True)
 
 # Language selection
 language = st.selectbox("Select language:", (
@@ -73,11 +86,11 @@ def process_input(input_text, language):
 # Localized strings
 strings = {
     "English": {
-        "title": "Legal Assistant for FIR Writing",
+        # "title": "Legal Assistant for FIR Writing",
         "input_type": "Choose input type:",
         "text_input": "Enter the incident details:",
         "upload_audio": "Upload Audio File",
-        "process": "Process",
+        "process": "Generate FIR",
         "no_input_warning": "Please enter some text or use the audio recorder.",
         "note": "Note: This tool is designed to assist police officers in drafting FIRs. Always consult with legal experts for final verification."
     },
@@ -296,3 +309,54 @@ if st.button(strings[language]["process"]):
 
 st.markdown("---")
 st.write(strings[language]["note"])
+
+###--- Footer ---###
+
+#--------------------------------------------------------------------
+footer = """
+<style>
+a:link, a:visited {
+    color: #FFFFFF;
+    background-color: transparent;
+    text-decoration: underline;
+}
+a:hover, a:active {
+    color: #7AE7C7;
+    background-color: transparent;
+    text-decoration: underline;
+}
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: transparent;
+    color: ##F5BF03;
+    text-align: center;
+}
+</style>
+<div class="footer">
+    <h6 style='text-align: center;'>
+        <span style='color: #f5f8fc;'>Developed by </span> 
+        <span style='color: #F81F6F;'> Raavi </span>
+    </h6>
+</div>
+"""
+
+# Now, you can use this string in Streamlit's markdown
+import streamlit as st
+st.markdown(footer, unsafe_allow_html=True)
+#--------------------------------------------------------------------
+
+###--- Hide Streamlit footer---###
+
+#--------------------------------------------------------------------
+hide_st_style = """
+<style>
+MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+"""
+st.markdown(hide_st_style, unsafe_allow_html=True)
+#--------------------------------------------------------------------
