@@ -15,20 +15,20 @@ generation_config = {
     "response_mime_type": "text/plain",
 }
 
-st.set_page_config(page_title="FIR-Drafter", page_icon="#")
+# st.set_page_config(page_title="FIR-Drafter", page_icon="#")
 
-st.markdown("""
-    <h1 style='text-align: center;'> 
-        <span style='color: #F81F6F;'>FIR Drafting Assistant </span>
-    </h1>
-""", unsafe_allow_html=True)
+# st.markdown("""
+#     <h1 style='text-align: center;'> 
+#         <span style='color: #F81F6F;'>FIR Drafting Assistant </span>
+#     </h1>
+# """, unsafe_allow_html=True)
 
-# Again, use st.markdown for second header
-st.markdown("""
-    <h4 style='text-align: center;'>
-        <span style='color: #f5f8fc;'>Write FIR accurately with legal guidance and assistance.</span>
-    </h4>
-""", unsafe_allow_html=True)
+# # Again, use st.markdown for second header
+# st.markdown("""
+#     <h4 style='text-align: center;'>
+#         <span style='color: #f5f8fc;'>Write FIR accurately with legal guidance and assistance.</span>
+#     </h4>
+# """, unsafe_allow_html=True)
 
 # Language selection
 language = st.selectbox("Select language:", (
@@ -313,39 +313,39 @@ st.write(strings[language]["note"])
 ###--- Footer ---###
 
 #--------------------------------------------------------------------
-footer = """
-<style>
-a:link, a:visited {
-    color: #FFFFFF;
-    background-color: transparent;
-    text-decoration: underline;
-}
-a:hover, a:active {
-    color: #7AE7C7;
-    background-color: transparent;
-    text-decoration: underline;
-}
-.footer {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    background-color: transparent;
-    color: ##F5BF03;
-    text-align: center;
-}
-</style>
-<div class="footer">
-    <h6 style='text-align: center;'>
-        <span style='color: #f5f8fc;'>Developed by </span> 
-        <span style='color: #F81F6F;'> Raavi </span>
-    </h6>
-</div>
-"""
+# footer = """
+# <style>
+# a:link, a:visited {
+#     color: #FFFFFF;
+#     background-color: transparent;
+#     text-decoration: underline;
+# }
+# a:hover, a:active {
+#     color: #7AE7C7;
+#     background-color: transparent;
+#     text-decoration: underline;
+# }
+# .footer {
+#     position: fixed;
+#     left: 0;
+#     bottom: 0;
+#     width: 100%;
+#     background-color: transparent;
+#     color: ##F5BF03;
+#     text-align: center;
+# }
+# </style>
+# <div class="footer">
+#     <h6 style='text-align: center;'>
+#         <span style='color: #f5f8fc;'>Developed by </span> 
+#         <span style='color: #F81F6F;'> Raavi </span>
+#     </h6>
+# </div>
+# """
 
-# Now, you can use this string in Streamlit's markdown
-import streamlit as st
-st.markdown(footer, unsafe_allow_html=True)
+# # Now, you can use this string in Streamlit's markdown
+# import streamlit as st
+# st.markdown(footer, unsafe_allow_html=True)
 #--------------------------------------------------------------------
 
 ###--- Hide Streamlit footer---###
