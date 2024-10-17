@@ -24,11 +24,11 @@ generation_config = {
 # """, unsafe_allow_html=True)
 
 # # Again, use st.markdown for second header
-# st.markdown("""
-#     <h4 style='text-align: center;'>
-#         <span style='color: #f5f8fc;'>Write FIR accurately with legal guidance and assistance.</span>
-#     </h4>
-# """, unsafe_allow_html=True)
+st.markdown("""
+    <h4 style='text-align: center;'>
+        <span style='color: #f5f8fc;'>Write FIR accurately with legal guidance and assistance.</span>
+    </h4>
+""", unsafe_allow_html=True)
 
 # Language selection
 language = st.selectbox("Select language:", (
