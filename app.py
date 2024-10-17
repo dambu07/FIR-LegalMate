@@ -25,9 +25,9 @@ generation_config = {
 
 # # Again, use st.markdown for second header
 st.markdown("""
-    <h4 style='text-align: center;'>
-        <span style='color: #f5f8fc;'>Write FIR accurately with legal guidance and assistance.</span>
-    </h4>
+    <h2 style='text-align: center;'>
+        <span style='color: #b91b1b;'>Write FIR accurately with legal guidance and assistance.</span>
+    </h2>
 """, unsafe_allow_html=True)
 
 # Language selection
